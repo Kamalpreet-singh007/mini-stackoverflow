@@ -40,10 +40,13 @@ class Comment(models.Model):
     parent_comment  = models.ForeignKey("self", related_name='comments', on_delete=models.CASCADE, null = True, blank = True)
     
     def __str__(self):
-        return f"{self.author.email}'s comment on {self.parent_response}"
+        return f"{self.author.email}'s comment "
 
     # def clean(self):
     #     if self.parent_comment and self.response:
     #         raise ValidationError("A comment cannot have both a parent comment and a response.")
     #     if not self.parent_comment and not self.response:
     #         raise ValidationError("A comment must have either a parent comment or a response.")
+
+
+# class modela
