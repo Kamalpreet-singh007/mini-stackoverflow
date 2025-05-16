@@ -75,3 +75,6 @@ coverage.xml
 # === Docker ===
 *.pid
 docker-compose.override.yml
+
+
+populate.py

@@ -1,13 +1,17 @@
     # from django.shortcuts import render
     # from django.http import HttpResponse 
 
-from .serializer import Questionserializer, Responseserializer, Commentserializer
-from .models import Question,Response, Comment
+from .serializer import Questionserializer, Responseserializer, Commentserializer,UpvotesSerializer
+from .models import Question,Response, Comment, Upvote
+from django.contrib.contenttypes.models import ContentType
 
 from rest_framework.views import APIView
 from rest_framework.response import Response as DRFResponse
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
+from django.core.exceptions import ObjectDoesNotExist
+
+
 # Create your views here.
 
 class QuestionAPIView(APIView):
@@ -220,4 +224,94 @@ class SingleCommentAPIView(APIView):
             return DRFResponse({"message": "Deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         return DRFResponse({"ERROR": "Comment ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
+class UpvoteAPIView(APIView):
+    def get(self, request, target_pk = None):
+        if target_pk:
+            # target_model = request.content_type
+            target_model = "question"
+            try:
+                content_type = ContentType.objects.get(model = target_model)
+                model = content_type.model_class()
+                obj = model.objects.get(pk = target_pk)
+            except ContentType.DoesNotExist:
+                return DRFResponse({"ERROR": f"Model '{model}' does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+            except ObjectDoesNotExist:
+                return DRFResponse({"ERROR": f"Object with id {target_pk} does not exist in model '{model}'."}, status=status.HTTP_404_NOT_FOUND)
+            data = obj.upvotes.all()
+            upvote_count = data.count()
+            # serializer = UpvotesSerializer(data,many = True)
+            return DRFResponse({"count" : upvote_count}, status = status.HTTP_200_OK)
+        return DRFResponse({"ERROR": "Target ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
+    def post(self, request, target_pk = None):
+        if target_pk:
+            # target_model = request.content_type
+            target_model = "question"
+
+            try:
+                content_type = ContentType.objects.get(model = target_model)
+                model = content_type.model_class()
+                target_obj = model.objects.get(pk = target_pk)
+            except ContentType.DoesNotExist:
+                return DRFResponse({"ERROR": f"Model '{model}' does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+            except ObjectDoesNotExist:
+                return DRFResponse({"ERROR": f"Object with id {target_pk} does not exist in model '{model}'."}, status=status.HTTP_404_NOT_FOUND)
+            data = {**request.data,
+            'object_id' : target_pk ,
+            'content_type' :content_type.id,
+            'author' : request.user.id
+            }
+            serializer = UpvotesSerializer(data = data)
+            if serializer.is_valid():
+                serializer.save()
+                return DRFResponse(serializer.data ,  status=status.HTTP_201_CREATED)
+            return DRFResponse(serializer.errors,status = status.HTTP_400_BAD_REQUEST)
+        return DRFResponse({"ERROR": "Target ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+            
+
+
+
+class UpvoteCountAPIView(APIView):
+    def get(self,request, target_pk = None):
+        if target_pk:
+            # target_model = request.content_type
+            target_model = "question"
+            try:
+                content_type = ContentType.objects.get(model = target_model)
+                model = content_type.model_class()
+                target_obj = model.objects.get(pk = target_pk)
+            except ContentType.DoesNotExist:
+                return DRFResponse({"ERROR": f"Model '{model}' does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+            except ObjectDoesNotExist:
+                return DRFResponse({"ERROR": f"Object with id {target_pk} does not exist in model '{model}'."}, status=status.HTTP_404_NOT_FOUND)
+            data = target_obj.upvotes.all()
+            # upvote_count = data.count()
+            serializer = UpvotesSerializer(data,many = True)
+            return DRFResponse(serializer.data, status = status.HTTP_200_OK)
+        return DRFResponse({"ERROR": "Target ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        
+class DownvoteAPIView(APIView):
+    def delete(self, request, target_pk):
+        if target_pk:
+            # target_model = request.content_type
+            target_model = "question"
+            try:
+                content_type = ContentType.objects.get(model = target_model)
+                model = content_type.model_class()
+                target_obj = model.objects.get(pk = target_pk)
+            except ContentType.DoesNotExist:
+                return DRFResponse({"ERROR": f"Model '{model}' does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+            except ObjectDoesNotExist:
+                return DRFResponse({"ERROR": f"Object with id {target_pk} does not exist in model '{model}'."}, status=status.HTTP_404_NOT_FOUND)
+            try:
+                upvote = Upvote.objects.filter(author = request.user, object_id = target_pk)
+            except Upvote.DoesNotExist:
+                return DRFResponse({"ERROR":"404 Not Found"}, status = status.HTTP_404_NOT_FOUND)
+            upvote.delete()
+            return DRFResponse({"message": "Deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        return DRFResponse({"ERROR": "Target ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# now i have the name of a model as strinng and i want to get data how can i do ghate

@@ -1,19 +1,26 @@
 from rest_framework import serializers
-from .models import Question, Response, Comment
+from rest_framework import serializers
+from .models import Question, Response, Comment, Upvote
 from django.forms.models import model_to_dict
+from django.contrib.contenttypes.models import ContentType
 
+class ContentTypeNameMixin(serializers.Serializer):
+    type_name = serializers.SerializerMethodField()
 
-class Questionserializer(serializers.ModelSerializer):
+    def get_type_name(self, obj):
+        return ContentType.objects.get_for_model(obj).model
+
+class Questionserializer(ContentTypeNameMixin, serializers.ModelSerializer):
     class Meta:
         model = Question
         fields ='__all__'
 
-class Responseserializer(serializers.ModelSerializer):
+class Responseserializer(ContentTypeNameMixin, serializers.ModelSerializer):
     class Meta:
         model = Response
         fields ='__all__'
 
-class Commentserializer(serializers.ModelSerializer):
+class Commentserializer(ContentTypeNameMixin, serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields ='__all__'
@@ -35,3 +42,20 @@ class Commentserializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Comment must be linked to either a parent comment or a response.")
         
         return data
+
+class UpvotesSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = Upvote
+        fields = '__all__'
+
+    # def validate(self,data):
+    #     allowed_host = ['Question','Response','Comment']
+    #     content_type = data['content_type'].model
+
+    #     if content_type not in allowed_host:
+    #         raise serializers.ValidationError("Upvotes can only target questions, responses, or comments.")
+        
+    #     return data
+
+
+

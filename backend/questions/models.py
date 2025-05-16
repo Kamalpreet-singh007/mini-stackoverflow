@@ -1,7 +1,18 @@
 from django.db import models
 from accounts.models import User 
 from django.core.exceptions import ValidationError
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 
+
+class Upvote(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    target = GenericForeignKey('content_type', 'object_id')
+
+    class Meta:
+        unique_together = ('author', 'content_type', 'object_id')
 
 # Create your models here.
 class Question(models.Model):
@@ -10,6 +21,7 @@ class Question(models.Model):
     author =  models.ForeignKey(User, related_name='questions', on_delete=models.SET_NULL ,null = True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    upvotes = GenericRelation(Upvote)
 
 
     def __str__(self):
@@ -20,7 +32,7 @@ class Response(models.Model):
     body = models.TextField() 
     author =  models.ForeignKey(User, related_name='responses', on_delete=models.SET_NULL, null = True)
     question = models.ForeignKey(Question, related_name='responses', on_delete=models.CASCADE, null = True)
-    upvotes = models.IntegerField()
+    upvotes = GenericRelation(Upvote)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -30,7 +42,7 @@ class Response(models.Model):
 class Comment(models.Model):
 
     body = models.TextField() 
-    upvotes = models.IntegerField(default = 0)
+    upvotes = GenericRelation(Upvote)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -49,4 +61,4 @@ class Comment(models.Model):
     #         raise ValidationError("A comment must have either a parent comment or a response.")
 
 
-# class modela
+
