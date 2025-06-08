@@ -3,25 +3,28 @@
 
 from .serializer import Questionserializer, Responseserializer, Commentserializer,UpvotesSerializer
 from .models import Question,Response, Comment, Upvote
+from .permissions import StandardPermissionAPIView
 from django.contrib.contenttypes.models import ContentType
 
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response as DRFResponse
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
-from rest_framework import status
+from rest_framework import status, filters
 from django.core.exceptions import ObjectDoesNotExist
 
 
 # Create your views here.
 
-class QuestionAPIView(APIView):
+class QuestionAPIView(StandardPermissionAPIView):
     def get(self, request, question_pk = None):
         if question_pk :
             try :
-                ques = Question.objects.get(pk =question_pk)
+                question = Question.objects.get(pk =question_pk)
             except Question.DoesNotExist:
                 return DRFResponse({"ERROR":"404 Not Found"}, status = status.HTTP_400_BAD_REQUEST)
-            serializer =Questionserializer(ques)
+            serializer =Questionserializer(question)
             return DRFResponse(serializer.data, status = status.HTTP_200_OK)
         else:
             questions = Question.objects.all().order_by('created_at')
@@ -46,11 +49,11 @@ class QuestionAPIView(APIView):
     def patch(self ,request,question_pk = None):
         if question_pk:
             try:
-                ques =  Question.objects.get(pk =question_pk)
+                question =  Question.objects.get(pk =question_pk)
             except Question.DoesNotExist:
                 return DRFResponse({"ERROR": "Question not found"}, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = Questionserializer(ques, data  = request.data, partial = True)
+            self.check_object_permissions(request, question)
+            serializer = Questionserializer(question, data  = request.data, partial = True)
             if serializer.is_valid():
                 serializer.save()
                 return DRFResponse(serializer.data, status=status.HTTP_200_OK)
@@ -59,24 +62,25 @@ class QuestionAPIView(APIView):
     def delete(self,request,question_pk = None):
         if question_pk:
             try:
-                ques = Question.objects.get(pk = question_pk)
+                question = Question.objects.get(pk = question_pk)
             except Question.DoesNotExist:
                 return DRFResponse({"ERROR": "Question not found"}, status=status.HTTP_404_NOT_FOUND)
-            ques.delete()
+            self.check_object_permissions(request, question)
+            question.delete()
             return DRFResponse({"message": "Deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         return DRFResponse({"ERROR": "Question ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ResponseAPIView(APIView):
+class ResponseAPIView(StandardPermissionAPIView):
     def get(self, request, question_pk = None):
        
         if question_pk :      
             try:
-                resp = Response.objects.filter(question = question_pk)
+                response = Response.objects.filter(question = question_pk)
             except Response.DoesNotExist:
                 return DRFResponse({"ERROR":"404 Not Found"}, status = status.HTTP_404_NOT_FOUND)
                
-            serializer = Responseserializer(resp, many = True)
+            serializer = Responseserializer(response, many = True)
             return DRFResponse(serializer.data, status = status.HTTP_200_OK)
                
         return DRFResponse({"ERROR": "Question ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
@@ -95,25 +99,25 @@ class ResponseAPIView(APIView):
             return DRFResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return DRFResponse({"ERROR": "Question ID not provided"}, status= status.HTTP_400_BAD_REQUEST)
 
-class SingleResponseAPIView(APIView):
+class SingleResponseAPIView(StandardPermissionAPIView):
     def get(self , request, response_pk = None):
         if response_pk :
             try:
-                resp = Response.objects.get(pk = response_pk)
+                response = Response.objects.get(pk = response_pk)
             except Response.DoesNotExist:
                 return DRFResponse({"ERROR":"404 Not Found"}, status = status.HTTP_404_NOT_FOUND)
-
-            serializer = Responseserializer(resp)
+                
+            serializer = Responseserializer(response)
             return DRFResponse(serializer.data, status = status.HTTP_200_OK)
         return DRFResponse({"ERROR":"Response ID not provided"}, status = status.HTTP_400_BAD_REQUEST)
     def patch(self,request,response_pk = None ):
         if response_pk :
             try:
-                resp = Response.objects.get(pk = response_pk)
+                response = Response.objects.get(pk = response_pk)
             except Response.DoesNotExist:
                 return DRFResponse({"ERROR":"404 Not Found"}, status = status.HTTP_404_NOT_FOUND)
-
-            serializer = Responseserializer(resp, data = request.data, partial = True)
+            self.check_object_permissions(request, response)
+            serializer = Responseserializer(response, data = request.data, partial = True)
             if serializer.is_valid():
                 serializer.save()
                 return DRFResponse(serializer.data, status=status.HTTP_200_OK)
@@ -123,23 +127,25 @@ class SingleResponseAPIView(APIView):
     def delete(self , request, response_pk = None,):
         if response_pk:
             try:
-                resp =  Response.objects.get(pk = response_pk)
+                response =  Response.objects.get(pk = response_pk)
             except Response.DoesNotExist:
                 return DRFResponse({"ERROR":"404 Not Found"}, status =status.HTTP_404_NOT_FOUND)
-            resp.delete()
+            self.check_object_permissions(request, response)
+            response.delete()
             return DRFResponse({"message": "Deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         return DRFResponse({"ERROR": "Response ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
    
 
-class CommentAPIView(APIView):
+class CommentAPIView(StandardPermissionAPIView):
     def get(self, request, response_pk = None):
        
         if response_pk:
             try:
-                comen = Comment.objects.filter(response =  response_pk)
+                comment = Comment.objects.filter(response =  response_pk)
             except Comment.DoesNotExist:
                 return DRFResponse({"ERROR":"404 Not Found"}, status =status.HTTP_404_NOT_FOUND)
-            serializer = Commentserializer(comen, many = True)
+            
+            serializer = Commentserializer(comment, many = True)
             return DRFResponse(serializer.data, status = status.HTTP_200_OK)
 
         return DRFResponse({"ERROR": "Response ID not provided"}, status= status.HTTP_400_BAD_REQUEST)
@@ -162,14 +168,14 @@ class CommentAPIView(APIView):
             return DRFResponse(serializer.errors,status = status.HTTP_400_BAD_REQUEST)
         return DRFResponse({"ERROR":"Response ID not provided"}, status = status.HTTP_400_BAD_REQUEST)       
 
-class ReplieAPIView(APIView):
+class ReplieAPIView(StandardPermissionAPIView):
     def get(self,request, comment_pk = None):
         if comment_pk:
             try:
-                comen = Comment.objects.filter(parent_comment = comment_pk)
+                comment = Comment.objects.filter(parent_comment = comment_pk)
             except Comment.DoesNotExist:
                 return DRFResponse({"ERROR":"404 Not Found"}, status = status.HTTP_404_NOT_FOUND)
-            serializer = Commentserializer(comen, many = True)
+            serializer = Commentserializer(comment, many = True)
             return DRFResponse(serializer.data, status = status.HTTP_200_OK)
         return DRFResponse({"ERROR": "Comment ID not provided"}, status= status.HTTP_400_BAD_REQUEST)
 
@@ -187,27 +193,28 @@ class ReplieAPIView(APIView):
             return DRFResponse(serializer.errors,status = status.HTTP_400_BAD_REQUEST)
         return DRFResponse({"ERROR": "Comment ID not provided"}, status= status.HTTP_400_BAD_REQUEST)
 
-class SingleCommentAPIView(APIView):
+class SingleCommentAPIView(StandardPermissionAPIView):
     def get(self, request, comment_pk = None):
         if comment_pk :
             try:
-                comen = Comment.objects.get(pk = comment_pk)
+                comment = Comment.objects.get(pk = comment_pk)
             except Comment.DoesNotExist:
                 return DRFResponse({"ERROR":"404 Not Found"}, status =status.HTTP_404_NOT_FOUND)
-            serializer = Commentserializer(comen)
+            serializer = Commentserializer(comment)
             return DRFResponse(serializer.data, status = status.HTTP_200_OK)
         return DRFResponse({"ERROR": "Comment ID not provided"}, status= status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request,comment_pk = None):
         if comment_pk:
             try:
-                comen = Comment.objects.get(pk = comment_pk)
+                comment = Comment.objects.get(pk = comment_pk)
             except Comment.DoesNotExist:
                  return DRFResponse({"ERROR":"404 Not Found"}, status =status.HTTP_404_NOT_FOUND)
+            self.check_object_permissions(request, comment)
             data ={
                 **request.data
             }
-            serializer = Commentserializer(comen, data = request.data, partial = True)    
+            serializer = Commentserializer(comment, data = request.data, partial = True)    
             if serializer.is_valid():
                 serializer.save()
                 return DRFResponse(serializer.data, status=200)
@@ -217,18 +224,20 @@ class SingleCommentAPIView(APIView):
     def delete(self, request, comment_pk = None):
         if comment_pk:
             try:
-                comen = Comment.objects.get(pk = comment_pk)
+                comment = Comment.objects.get(pk = comment_pk)
             except Comment.DoesNotExist:
                 return DRFResponse({"ERROR":"404 Not Found"}, status = status.HTTP_404_NOT_FOUND)
-            comen.delete()
+            self.check_object_permissions(request, comment)
+            comment.delete()
             return DRFResponse({"message": "Deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         return DRFResponse({"ERROR": "Comment ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-class UpvoteAPIView(APIView):
-    def get(self, request, target_pk = None):
+class GetUpvoteCountAPIView(APIView):
+
+    def post(self, request, target_pk = None):
         if target_pk:
-            # target_model = request.content_type
-            target_model = "question"
+            target_model = request.data.get('entity_type')
+            # target_model = "question"
             try:
                 content_type = ContentType.objects.get(model = target_model)
                 model = content_type.model_class()
@@ -239,27 +248,28 @@ class UpvoteAPIView(APIView):
                 return DRFResponse({"ERROR": f"Object with id {target_pk} does not exist in model '{model}'."}, status=status.HTTP_404_NOT_FOUND)
             data = obj.upvotes.all()
             upvote_count = data.count()
-            # serializer = UpvotesSerializer(data,many = True)
             return DRFResponse({"count" : upvote_count}, status = status.HTTP_200_OK)
         return DRFResponse({"ERROR": "Target ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
+class UpvoteAPIView(StandardPermissionAPIView):
 
     def post(self, request, target_pk = None):
         if target_pk:
-            # target_model = request.content_type
-            target_model = "question"
-
+            target_model = request.data.get("entity_type")
+            # target_model = "question"
+            print(f'{target_model}__________________________')
+            print(f'{target_pk}target_pk')
             try:
                 content_type = ContentType.objects.get(model = target_model)
                 model = content_type.model_class()
                 target_obj = model.objects.get(pk = target_pk)
             except ContentType.DoesNotExist:
-                return DRFResponse({"ERROR": f"Model '{model}' does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+                return DRFResponse({"ERROR": f"Model  does not exist."}, status=status.HTTP_400_BAD_REQUEST)
             except ObjectDoesNotExist:
                 return DRFResponse({"ERROR": f"Object with id {target_pk} does not exist in model '{model}'."}, status=status.HTTP_404_NOT_FOUND)
-            data = {**request.data,
-            'object_id' : target_pk ,
+            data = {
             'content_type' :content_type.id,
-            'author' : request.user.id
+            'author' : request.user.id,
+            'object_id':target_pk
             }
             serializer = UpvotesSerializer(data = data)
             if serializer.is_valid():
@@ -268,50 +278,53 @@ class UpvoteAPIView(APIView):
             return DRFResponse(serializer.errors,status = status.HTTP_400_BAD_REQUEST)
         return DRFResponse({"ERROR": "Target ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-            
-
-
-
-class UpvoteCountAPIView(APIView):
-    def get(self,request, target_pk = None):
+class GetUpvoteAPIView(APIView):
+    def post(self,request, target_pk = None):
         if target_pk:
-            # target_model = request.content_type
-            target_model = "question"
+            target_model = request.data.get('entity_type')
+            # target_model = "question"
+            print("________________________________________________")
+            print(f'hfytfty {target_model}')
             try:
                 content_type = ContentType.objects.get(model = target_model)
                 model = content_type.model_class()
                 target_obj = model.objects.get(pk = target_pk)
             except ContentType.DoesNotExist:
-                return DRFResponse({"ERROR": f"Model '{model}' does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+                return DRFResponse({"ERROR": f"Model  does not exist."}, status=status.HTTP_400_BAD_REQUEST)
             except ObjectDoesNotExist:
                 return DRFResponse({"ERROR": f"Object with id {target_pk} does not exist in model '{model}'."}, status=status.HTTP_404_NOT_FOUND)
             data = target_obj.upvotes.all()
-            # upvote_count = data.count()
             serializer = UpvotesSerializer(data,many = True)
             return DRFResponse(serializer.data, status = status.HTTP_200_OK)
         return DRFResponse({"ERROR": "Target ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
         
-class DownvoteAPIView(APIView):
-    def delete(self, request, target_pk):
+class DownvoteAPIView(StandardPermissionAPIView):
+    def post(self, request, target_pk):
         if target_pk:
-            # target_model = request.content_type
-            target_model = "question"
+            target_model = request.data.get('entity_type')
+            # target_model = "question"
+
             try:
                 content_type = ContentType.objects.get(model = target_model)
                 model = content_type.model_class()
                 target_obj = model.objects.get(pk = target_pk)
             except ContentType.DoesNotExist:
-                return DRFResponse({"ERROR": f"Model '{model}' does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+                return DRFResponse({"ERROR": f"Model  does not exist."}, status=status.HTTP_400_BAD_REQUEST)
             except ObjectDoesNotExist:
                 return DRFResponse({"ERROR": f"Object with id {target_pk} does not exist in model '{model}'."}, status=status.HTTP_404_NOT_FOUND)
             try:
                 upvote = Upvote.objects.filter(author = request.user, object_id = target_pk)
             except Upvote.DoesNotExist:
                 return DRFResponse({"ERROR":"404 Not Found"}, status = status.HTTP_404_NOT_FOUND)
+            self.check_object_permissions(request, upvote)
             upvote.delete()
             return DRFResponse({"message": "Deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         return DRFResponse({"ERROR": "Target ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# now i have the name of a model as strinng and i want to get data how can i do ghate
+class QuestionSearchView(ListAPIView):
+    queryset = Question.objects.all()
+    serializer_class = Questionserializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'body']
