@@ -9,14 +9,11 @@ from rest_framework import status
 class UserAPIview(APIView):
   
     def post(self,request):
-        # email = request.data.get('email')
-        # firstname = request.data.get('firstname')
-        # lastname = request.data.get('lastname')
-        # password = request.data.get('password')
-        email = "user6@example.com"
-        firstname = "user"
-        password = "user6"
-        lastname = None
+        email = request.data.get('email')
+        firstname = request.data.get('firstname')
+        lastname = request.data.get('lastname')
+        password = request.data.get('password')
+       
 
         if not all([email, firstname, password]):
             return DRFResponse({"ERROR": "Allfeilds are required"}, status = status.HTTP_400_BAD_REQUEST)

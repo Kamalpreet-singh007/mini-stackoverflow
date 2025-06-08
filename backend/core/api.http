@@ -1,0 +1,335 @@
+########################################
+# User APIs - /api/user/
+########################################
+
+### Register new user
+POST http://localhost:8000/api/user/register
+Content-Type: application/json
+
+{
+  "email": "user2@example.com",
+  "password": "user123",
+  "firstname": "user",
+  "lastname": "2"
+}
+
+### Login to get JWT tokens (TokenObtainPairView)
+POST http://localhost:8000/api/token/
+Content-Type: application/json
+
+{
+  "email": "user1@example.com",
+  "password": "user123"
+}
+
+### Refresh JWT token
+POST http://localhost:8000/api/token/refresh/
+Content-Type: application/json
+
+{
+  "refresh": "<REFRESH_TOKEN>"
+}
+
+### Logout (blacklist refresh token)
+POST http://localhost:8000/api/user/logout/
+Authorization: Bearer <ACCESS_TOKEN>
+Content-Type: application/json
+
+{
+  "refresh": "<REFRESH_TOKEN>"
+}
+
+### Get current logged-in user info
+GET http://localhost:8000/api/user/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5MDY4Mzc0LCJpYXQiOjE3NDkwNjgwNzQsImp0aSI6IjhiNzIyMzE3NDFhYzQyNjc5Y2NjMmY3YTMzOGQ2MjA2IiwidXNlcl9pZCI6MTE5fQ.odgKtml2y4X6l5KzELXNqqxDepjVtV_5fZajdN2lBFk
+Accept: application/json
+
+### Update current user info (partial)
+PATCH http://localhost:8000/api/user/me
+Authorization: Bearer <ACCESS_TOKEN>
+Content-Type: application/json
+
+{
+  "first_name": "NewName"
+}
+
+########################################
+# Question APIs - /api/questions/
+########################################
+
+### Get all questions (public)
+GET http://localhost:8000/api/questions/
+Accept: application/json
+
+### Create a question (auth required)
+POST http://localhost:8000/api/questions/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5MDc0NDQ0LCJpYXQiOjE3NDkwNzQxNDQsImp0aSI6IjEyNjFiYTQ2ZDFjYzRhZTRhZGNkMmIyOGJjMDc1YjA4IiwidXNlcl9pZCI6MTE5fQ.SuKZ67nr6d4aSn4Un0IJ_sVRV6FYlXwNquyXFfqOXEw
+Content-Type: application/json
+
+{
+  "title": "How to override get_permissions in DRF?",
+  "body": "Confused about custom permission usage..."
+}
+
+### Get a question by id (public)
+GET http://localhost:8000/api/questions/114/
+Accept: application/json
+
+### Update question by id (auth + owner)
+PATCH http://localhost:8000/api/questions/117/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5MDc0NDQ0LCJpYXQiOjE3NDkwNzQxNDQsImp0aSI6IjEyNjFiYTQ2ZDFjYzRhZTRhZGNkMmIyOGJjMDc1YjA4IiwidXNlcl9pZCI6MTE5fQ.SuKZ67nr6d4aSn4Un0IJ_sVRV6FYlXwNquyXFfqOXEw
+Content-Type: application/json
+
+{
+  "title": "Updated question title"
+}
+
+### Delete question by id (auth + owner)
+DELETE http://localhost:8000/api/questions/117/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5MDc0NDQ0LCJpYXQiOjE3NDkwNzQxNDQsImp0aSI6IjEyNjFiYTQ2ZDFjYzRhZTRhZGNkMmIyOGJjMDc1YjA4IiwidXNlcl9pZCI6MTE5fQ.SuKZ67nr6d4aSn4Un0IJ_sVRV6FYlXwNquyXFfqOXEw
+
+### Search questions
+GET http://localhost:8000/api/questions/search/?q=permissions
+Accept: application/json
+
+########################################
+# Response APIs
+########################################
+
+### Get all responses for a question (public)
+GET http://localhost:8000/api/questions/116/responses/
+Accept: application/json
+
+### Post a response to a question (auth required)
+POST http://localhost:8000/api/questions/116/responses/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5MDcwMDYyLCJpYXQiOjE3NDkwNjk3NjIsImp0aSI6ImUxMGE5NTY1NDlhNDQ1Y2U5MzA2M2JiNWJjOTU1NGYxIiwidXNlcl9pZCI6MTIwfQ.s1ly7zZgMzP7ttQ0fZrwp3IlJErEY1qThXURPeBnhHw
+Content-Type: application/json
+
+{
+  "body": "You should override get_permissions() method in your view."
+}
+
+### Get a single response by id (public)
+GET http://localhost:8000/api/responses/12/
+Accept: application/json
+
+### Update a response by id (auth + owner)
+PATCH http://localhost:8000/api/responses/119/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5MDcwODk4LCJpYXQiOjE3NDkwNzA1OTgsImp0aSI6IjEwNDljMzgxNTEyNDRiNGM5YWQ1YmU4MmVmMzcxNTU5IiwidXNlcl9pZCI6MTE5fQ.DHSY6TPI4moHOkxMX5FeTbG1RY7Oxw6JG7x7D51nzaw
+Content-Type: application/json
+
+{
+  "body": "Updated1 response content"
+}
+
+### Delete a response by id (auth + owner)
+DELETE http://localhost:8000/api/responses/107/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ4OTkyOTI2LCJpYXQiOjE3NDg5OTI2MjYsImp0aSI6IjE5YjE4MjI2OTNhZjRmODliNjE4Nzc0OGI1YWNjOTcxIiwidXNlcl9pZCI6MTE1fQ.Y8c6N1ux_F-Z9EF7uGD5gFfPmle-a9CWG9oY_u27tR0
+
+########################################
+# Comment APIs
+########################################
+
+### Get all comments on a response
+GET http://localhost:8000/api/responses/12/comments/
+Accept: application/json
+
+### Post a comment on a response (auth required)
+POST http://localhost:8000/api/responses/119/comments/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5MDc0NzM4LCJpYXQiOjE3NDkwNzQ0MzgsImp0aSI6ImYxNzZiZmJjOThiNTQ1M2E4NjlkZmJjYjFjYjYzZjNiIiwidXNlcl9pZCI6MTIwfQ.9j6usfxsZuDml909zbv1bslL8QCNBldJpDqhp70GzTU
+Content-Type: application/json
+
+{
+  "body": "Great answer, thanks!"
+}
+
+### Get a comment by id
+GET http://localhost:8000/api/comments/7/
+Accept: application/json
+
+### Update a comment by id (auth + owner)
+PATCH http://localhost:8000/api/comments/133/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5MDc0NzM4LCJpYXQiOjE3NDkwNzQ0MzgsImp0aSI6ImYxNzZiZmJjOThiNTQ1M2E4NjlkZmJjYjFjYjYzZjNiIiwidXNlcl9pZCI6MTIwfQ.9j6usfxsZuDml909zbv1bslL8QCNBldJpDqhp70GzTU
+Content-Type: application/json
+
+{
+  "body": "Updated comment content"
+}
+
+### Delete a comment by id (auth + owner)
+DELETE http://localhost:8000/api/comments/133/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5MDc0ODAyLCJpYXQiOjE3NDkwNzQ1MDIsImp0aSI6ImFhZWFjNWY3MzY1MzRmMTc4NWVhNDI2NGFiYWE3MTI5IiwidXNlcl9pZCI6MTE5fQ.tTsFbL6De-tMOGAD-DUeIUgk4GLMwsHIeIR0FQA9JKk
+
+### Get all replies to a comment
+GET http://localhost:8000/api/comments/7/replies
+Accept: application/json
+
+### Post a reply to a comment (auth required)
+POST http://localhost:8000/api/comments/7/replies
+Authorization: Bearer <ACCESS_TOKEN>
+Content-Type: application/json
+
+{
+  "body": "I totally agree with you!"
+}
+
+########################################
+# Upvote APIs
+########################################
+
+### Get all upvotes for a target (question/response/comment)
+post http://localhost:8000/api/upvote/116/
+Accept: application/json
+Content-Type: application/json
+
+{
+  "entity_type":"question"
+}
+
+### Upvote a target (auth required)
+POST http://localhost:8000/api/upvote/116/add
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5Mzk4MjE3LCJpYXQiOjE3NDkzOTc5MTcsImp0aSI6ImQ5NDYyYjc2ZjE0YTQxYjI4NzdiMmEzYmNjNmVkZDZkIiwidXNlcl9pZCI6MTE5fQ.an27LNYwblwowuGQ34MMm1VHI4UlpMa0RpbzXY-oi9k
+Content-Type: application/json
+
+{
+  "entity_type":"question"
+}
+
+
+### Remove upvote (downvote/unlike) from a target (auth required)
+post http://localhost:8000/api/upvote/116/unlike
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ5Mzk4MjE3LCJpYXQiOjE3NDkzOTc5MTcsImp0aSI6ImQ5NDYyYjc2ZjE0YTQxYjI4NzdiMmEzYmNjNmVkZDZkIiwidXNlcl9pZCI6MTE5fQ.an27LNYwblwowuGQ34MMm1VHI4UlpMa0RpbzXY-oi9k
+Content-Type: application/json
+
+{
+  "entity_type":"question"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ### Create a Question
+# POST http://localhost:8000/api/questions/
+# Content-Type: application/json
+# # Authorization: Bearer YOUR_JWT_TOKEN
+# # Accept: application/json
+
+
+# {
+#   "title": "What is Django REST Framework?",
+#   "body": "I want to understand how to use DRF with serializers and views."
+# }
+
+# ###
+
+# ### Get All Questions
+# GET http://localhost:8000/api/questions/
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ4MTAzODE0LCJpYXQiOjE3NDgxMDM1MTQsImp0aSI6ImM2MWQ3MTFmZWUzNDQ3NjA5ODhiZDUwYzQxZTdlOThmIiwidXNlcl9pZCI6MTExfQ.SiVW8dZzGkmpN04GOhNXJQlB042b1UhrtWh4MsTMzr0-----
+
+# ###
+
+# ### Get Single Question
+# GET  http://localhost:8000/api/questions/109/
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ4MTA2MDE3LCJpYXQiOjE3NDgxMDU3MTcsImp0aSI6Ijg2ZGRhMTFkYjA3YjRkNjk4NWE4N2Y0MWYwZWU1NzQ3IiwidXNlcl9pZCI6MTExfQ.NHJnes3JcoMKOLAmJkmo8hZoPjCuP7T-XkvIQD0n0ec
+# Accept: application/json
+
+# # {
+# #   "title": "What is Django REST Framework _patched ?"
+  
+# # }
+
+# ###
+
+# ### Search Questions
+# GET http://localhost:8000/questions/search/?query=django
+# Authorization: Bearer YOUR_JWT_TOKEN
+
+# ###
+
+# ### Post a Response to a Question
+# POST http://localhost:8000/questions/1/responses/
+# Content-Type: application/json
+# Authorization: Bearer YOUR_JWT_TOKEN
+
+# {
+#   "body": "You should look into generic views and ModelSerializer."
+# }
+
+# ###
+
+# ### Get, Update or Delete Single Response
+# GET http://localhost:8000/responses/1/
+# Authorization: Bearer YOUR_JWT_TOKEN
+
+# ###
+
+# ### Post a Comment on a Response
+# POST http://localhost:8000/responses/1/comments/
+# Content-Type: application/json
+# Authorization: Bearer YOUR_JWT_TOKEN
+
+# {
+#   "text": "Thanks for the response!"
+# }
+
+# ###
+
+# ### Get, Update or Delete Single Comment
+# GET http://localhost:8000/comments/1/
+# Authorization: Bearer YOUR_JWT_TOKEN
+
+# ###
+# PATCH  http://localhost:8000/api/user/me
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ4OTgwNjQ1LCJpYXQiOjE3NDg5ODAzNDUsImp0aSI6ImNiMTc5MDIzODZiNjQ5ZjU5OTI5MjZiN2M0M2ViNTA4IiwidXNlcl9pZCI6MTExfQ.LrcQmPOgQdhvzOd2-IBEoOPKmMpTXazQD9DeIhMkspc
+
+# {
+#   "email":"kamal@kamal.com"
+# }
+
+# ###
+
+# ### Post a Reply to a Comment
+# POST http://localhost:8000/comments/1/replies
+# Content-Type: application/json
+# Authorization: Bearer YOUR_JWT_TOKEN
+
+# {
+#   "text": "You're welcome!"
+# }
+
+# ###
+
+# ### Upvote a Target (question, response, comment)
+# POST http://localhost:8000/upvote/109/
+# Authorization: Bearer YOUR_JWT_TOKEN
+
+
+# ###
+
+# ### Get All Upvotes for a Target
+# GET http://localhost:8000/api/upvote/109/all
+# # Authorization: Bearer YOUR_JWT_TOKEN
+# Accept: application/json
+
+# {
+#     "content_type": "response"
+# }
+
+
+# ###
+
+# ### Unlike (Remove Upvote)
+# DELETE http://localhost:8000/upvote/1/unlike
+# Authorization: Bearer YOUR_JWT_TOKEN
