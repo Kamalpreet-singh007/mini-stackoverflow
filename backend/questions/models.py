@@ -1,6 +1,5 @@
 from django.db import models
 from accounts.models import User 
-from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 

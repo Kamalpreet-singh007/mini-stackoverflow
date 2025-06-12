@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework import serializers
 from .models import Question, Response, Comment, Upvote
 from django.forms.models import model_to_dict
 from django.contrib.contenttypes.models import ContentType
@@ -48,14 +47,13 @@ class UpvotesSerializer(serializers.ModelSerializer):
         model = Upvote
         fields = '__all__'
 
-    # def validate(self,data):
-    #     allowed_host = ['Question','Response','Comment']
-    #     content_type = data['content_type'].model
-
-    #     if content_type not in allowed_host:
-    #         raise serializers.ValidationError("Upvotes can only target questions, responses, or comments.")
-        
-    #     return data
+    validators = [
+        serializers.UniqueTogetherValidator(
+            queryset=Upvote.objects.all(),
+            fields=['author', 'content_type', 'object_id'],
+            message="You have already upvoted this item."
+        )
+    ]
 
 
 
