@@ -11,11 +11,10 @@ from rest_framework_simplejwt.exceptions import TokenError
 class UserAPIview(APIView):
     def post(self, request):
         email = request.data.get("email")
-        firstname = request.data.get("firstname")
-        lastname = request.data.get("lastname")
+        username = request.data.get("username")
         password = request.data.get("password")
 
-        if not all([email, firstname, password]):
+        if not all([email, username, password]):
             return DRFResponse(
                 {"ERROR": "Allfeilds are required"}, status=status.HTTP_400_BAD_REQUEST
             )
@@ -28,8 +27,7 @@ class UserAPIview(APIView):
         User.objects.create_user(
             email=email,
             password=password,
-            first_name=firstname,
-            last_name=lastname or "",
+            username=username,
         )
         return DRFResponse(
             {"message": "User registered successfully!"}, status=status.HTTP_201_CREATED
