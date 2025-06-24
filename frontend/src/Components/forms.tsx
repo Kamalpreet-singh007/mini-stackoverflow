@@ -1,45 +1,21 @@
-import {useState} from "react";
-type Props = {
-  onSuccessToggle: () => void;
-};
+import {useState, useContext} from "react";
+import {authContext} from "../utills/auth.tsx"
+import { useNavigate } from "react-router-dom";
+
 
 export const Loginform:React.FC=()=>{
     const [email, setemail] = useState("");
     const [password, setpassword] = useState("");
+    const { login} = useContext(authContext)!;
+    const navigate = useNavigate();
+
 
     const handel_login = async (e:React.FormEvent)=> {
     e.preventDefault();
-    
-    try{
-        const response = await fetch("http://localhost:8000/api/token/",
-            {
-                method :"post",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body :JSON.stringify( {
-                    email:email,
-                    password:password,
-                }),
-            });
-            if(!response.ok){
-                throw new Error("Invalid credentials");
-                    
-            }
-            const data = await response.json();
-            
-            localStorage.setItem("access_token",data.access);
-            localStorage.setItem("refrsh_token", data.refresh);
-            alert("login succesfully")
+    console.log("hello")
+    login(email, password)
+    navigate("/"); 
 
-    }
-    catch(error){
-        console.error("Login error:",error);
-        alert("Login failed. Please check your email and password.");
-  
-        
-    }
-    console.log("login",{email,password});
 };
 return (
     <form onSubmit ={handel_login} className = "form">
@@ -66,41 +42,20 @@ return (
 )
 }
 
-export const Signinform =({ onSuccessToggle }: Props)=>{
+export const Signinform =()=>{
     const [email, setemail] = useState("");
     const [password, setpassword] = useState("");
     const [username, setusername] = useState("");
-    
+    const { signup} = useContext(authContext)!;
+    const navigate = useNavigate();
+
+
     
     const handel_signin = async (e:React.FormEvent)=> {
     e.preventDefault();
-    console.log({ username, email, password });
-    try{
-        const response = await fetch("http://localhost:8000/api/user/register/",{
-            method :"post",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            body:JSON.stringify({
-                username:username,
-                email:email,
-                password:password,
-            }),
-        });
-        if(!response.ok){
-                throw new Error("Sign in failed");
-                    
-            }
-        alert("Registartion Succesfully");
-        onSuccessToggle();
-            
-    }
-    catch (err) {
-      console.error(err);
-      alert("Sign up failed");
-    }
-
-
+    signup(username, email ,password)
+    navigate("/login"); 
+    
     
 } 
     

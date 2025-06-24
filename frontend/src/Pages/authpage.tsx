@@ -16,7 +16,7 @@ const AuthPage =() => {
             {islogin ?(
             <Loginform/>
             ):(
-            <Signinform onSuccessToggle={toggleForm} />
+            <Signinform />
             )}
 
             <p>
