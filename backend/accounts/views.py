@@ -1,4 +1,6 @@
+from .serializers import MyTokenObtainPairSerializer
 from .models import User
+from rest_framework_simplejwt.views import TokenObtainPairView
 from accounts.serializers import UserSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -76,8 +78,5 @@ class CurrentUserAPIview(APIView):
         return DRFResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class UserLoginAPI(APIView):
-
-# class UserSigninAPI(APIView):
-
-# class UserLogoutAPI(APIView):
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer

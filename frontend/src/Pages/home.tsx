@@ -1,8 +1,14 @@
 
 function Home(){
     return(
-    <div>
-        <p>home</p>
+    <div className ="homePage">
+        <div className="homePage-hero">
+
+        </div>
+        <div className="homePage-questions">
+            
+        </div>
+        
     </div>
     )
 }
