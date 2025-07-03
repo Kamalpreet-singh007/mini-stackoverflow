@@ -8,7 +8,7 @@ function NavBar(){
   const{user} = useContext(authContext)!;
   const [profileDropDown, setProfileDropDown] = useState(false)
   const handelsearch = async(e : React.FormEvent)=>{
-    console.log();
+    console.log("search");
     
   }
   const toggleDropDown = async() =>{

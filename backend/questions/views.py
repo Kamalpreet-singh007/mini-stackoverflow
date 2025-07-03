@@ -18,6 +18,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework import status, filters
 from django.core.exceptions import ObjectDoesNotExist
 
+from django.db.models import Prefetch
 
 # Create your views here.
 
@@ -34,13 +35,30 @@ class QuestionAPIView(StandardPermissionAPIView):
             serializer = Questionserializer(question)
             return DRFResponse(serializer.data, status=status.HTTP_200_OK)
         else:
-            questions = Question.objects.all().order_by("created_at")
-            paginator = PageNumberPagination()
-            paginator.page_size = 2
-            result_page = paginator.paginate_queryset(questions, request)
-            serializer = Questionserializer(result_page, many=True)
+            questions = Question.objects.select_related('author').prefetch_related('upvotes',Prefetch('responses',queryset=Response.objects.select_related('author')   )).order_by("created_at")
+            data = []
+            for question in questions:
+                data.append({
+                    "author": {
+                        "id": question.author.id,
+                        "username": question.author.username
+                    },
+                    "id": question.id,
+                    "title": question.title,
+                    "body":question.body,
+                    "response_count":question.responses.count(),
+                    "created_at":question.created_at,
+                    "updated_at":question.updated_at,
+                    "upvote_count": question.upvotes.count(),
+                    
+                })
+            # paginator = PageNumberPagination()
+            # paginator.page_size = 9
+            # result_page = paginator.paginate_queryset(questions, request)
+            # serializer = Questionserializer(result_page, many=True)
 
-            return paginator.get_paginated_response(serializer.data)
+            # return paginator.get_paginated_response(serializer.data)
+            return DRFResponse(data,status=status.HTTP_200_OK)
 
     def post(self, request):
         data = {**request.data, "author": request.user.id}
@@ -90,14 +108,28 @@ class ResponseAPIView(StandardPermissionAPIView):
     def get(self, request, question_pk=None):
         if question_pk:
             try:
-                response = Response.objects.filter(question=question_pk)
+                # response = Response.objects.filter(question=question_pk)
+                response = Response.objects.filter(question=question_pk).select_related('author').prefetch_related('upvotes')
             except Response.DoesNotExist:
                 return DRFResponse(
                     {"ERROR": "404 Not Found"}, status=status.HTTP_404_NOT_FOUND
                 )
+            data=[]
+            for res in response:
+                data.append({
+                    "id": res.id,
+                    "body": res.body,
+                    "author": {
+                        "id": res.author.id,
+                        "username": res.author.username
+                    },
+                    "upvote_count": res.upvotes.count(),
+                    "created_at": res.created_at,
+                    "updated_at": res.updated_at,
+                })
 
-            serializer = Responseserializer(response, many=True)
-            return DRFResponse(serializer.data, status=status.HTTP_200_OK)
+            # serializer = Responseserializer(response, many=True)
+            return DRFResponse(data, status=status.HTTP_200_OK)
 
         return DRFResponse(
             {"ERROR": "Question ID not provided"}, status=status.HTTP_400_BAD_REQUEST
