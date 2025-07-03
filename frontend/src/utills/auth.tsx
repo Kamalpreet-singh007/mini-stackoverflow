@@ -6,18 +6,10 @@
 
 import {createContext,useState} from "react";
 import type { ReactNode } from "react";
+import type { User} from "../types"
 
 
-
- type User ={
-    username:string;
-    email:string;
-    password:string;
-    created_at: string;
-    updated_at: string;
-    author: number;
-    type_name: string;
-}
+ 
 
 interface AuthContextType {
   isAuth: boolean;

@@ -12,7 +12,6 @@ export const Loginform:React.FC=()=>{
 
     const handel_login = async (e:React.FormEvent)=> {
     e.preventDefault();
-    console.log("hello")
     login(email, password)
     navigate("/"); 
 
