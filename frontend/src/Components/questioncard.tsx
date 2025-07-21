@@ -1,4 +1,3 @@
-import { authContext } from '../utills/auth';
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
 import type { Question } from '../types';
