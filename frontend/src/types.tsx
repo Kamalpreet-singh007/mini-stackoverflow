@@ -6,11 +6,12 @@ export type Author = {
 export type Response = {
   id: number;
   body: string;
-  response_count?: number; // optional, since not always present
+  comment_count?: number; // optional, since not always present
   author: Author;
   upvote_count: number;
   created_at: string;
   updated_at: string;
+  upvoted_by_user: boolean;
 };
 
 export type Question = {
@@ -22,6 +23,7 @@ export type Question = {
   created_at: string;
   updated_at: string;
   response_count: number;
+  upvoted_by_user: boolean;
 };
 export type User = {
   id: number;
@@ -36,4 +38,15 @@ export type User = {
 export type ResponseDescription = {
   // userId:number;
   responses: Response[];
+};
+
+export type CommentDescription = {
+  id: number;
+  body: string;
+  author: Author;
+  created_at: string;
+  updated_at: string;
+  upvote_count: number;
+  replies: CommentDescription[];
+  upvoted_by_user: boolean;
 };

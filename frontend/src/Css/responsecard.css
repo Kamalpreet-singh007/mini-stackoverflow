@@ -1,0 +1,91 @@
+.responeCard {
+  margin: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: #fafafa;
+  font-family: sans-serif;
+  font-size: 1rem;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+.meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+.meta-author {
+  font-weight: 600;
+}
+
+.date {
+  font-style: italic;
+}
+.response-body {
+  margin-top: 0.75rem;
+  line-height: 1.5;
+}
+
+.viewMore {
+  text-align: right;
+  color: #0077ff;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  user-select: none;
+}
+.footer {
+  display: flex;
+  justify-content: right;
+  font-size: larger;
+  border-top: 1px solid #eee;
+  padding-top: 0.5rem;
+  margin-top: 1rem;
+  color: #555;
+}
+
+.comment-dropdown {
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 8px;
+}
+
+.comments-list {
+  margin-bottom: 10px;
+}
+
+.comment {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.comment-input {
+  display: flex;
+  gap: 8px;
+}
+
+.comment-input input {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.comment-input button {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.comment-input button:hover {
+  background-color: #0056b3;
+}
