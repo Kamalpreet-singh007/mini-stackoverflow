@@ -19,10 +19,10 @@ export type Question = {
   title: string;
   body: string;
   author: Author;
-  upvote_count: number;
   created_at: string;
   updated_at: string;
   response_count: number;
+  upvote_count: number;
   upvoted_by_user: boolean;
 };
 export type User = {

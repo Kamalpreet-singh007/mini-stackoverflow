@@ -67,8 +67,7 @@ export const ResponseCard: React.FC<Props> = ({ response, onUpdate }) => {
     const optimisticCount = likeCount + (optimisticLiked ? 1 : -1);
     setLiked(optimisticLiked);
     setLikeCount(optimisticCount);
-    setLiked(optimisticLiked);
-    setLikeCount(optimisticCount);
+
     try {
       if (optimisticLiked) {
         await upvote(response.id, 'response');
@@ -156,7 +155,8 @@ export const ResponseCard: React.FC<Props> = ({ response, onUpdate }) => {
             <div className="comments-list">
               {comments?.map((c, i) => (
                 <div key={i} className="comment">
-                  {c.body}
+                  <div className="comment-body">{c.body}</div>
+                  {c.replies && <div className="replies"></div>}
                 </div>
               ))}
             </div>

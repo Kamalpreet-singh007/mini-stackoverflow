@@ -10,9 +10,23 @@ class ContentTypeNameMixin(serializers.Serializer):
         return ContentType.objects.get_for_model(obj).model
 
 class Questionserializer(ContentTypeNameMixin, serializers.ModelSerializer):
+    upvote_count = serializers.SerializerMethodField()
+    upvoted_by_user = serializers.SerializerMethodField()
+
     class Meta:
         model = Question
         fields ='__all__'
+    def get_upvote_count(self, obj):
+        return obj.upvotes.count()
+
+    def get_upvoted_by_user(self, obj):
+        user = self.context.get('request').user
+        content_type = self.context.get('content_type', ContentType.objects.get_for_model(obj))
+        if user.is_authenticated:
+            return obj.upvotes.filter(content_type=content_type,
+            object_id=obj.id,
+            author=user).exists()
+        return False
 
 class Responseserializer(ContentTypeNameMixin, serializers.ModelSerializer):
     class Meta:

@@ -25,17 +25,33 @@ from django.db.models import Prefetch
 
 class QuestionAPIView(StandardPermissionAPIView):
     def get(self, request, question_pk=None):
-        print(request.user
-              )
+        user = request.user.id
         if question_pk:
             try:
-                question = Question.objects.get(pk=question_pk)
+                question = Question.objects.prefetch_related("upvotes") .get(pk=question_pk)
             except Question.DoesNotExist:
                 return DRFResponse(
                     {"ERROR": "404 Not Found"}, status=status.HTTP_400_BAD_REQUEST
                 )
-            serializer = Questionserializer(question)
-            return DRFResponse(serializer.data, status=status.HTTP_200_OK)
+            
+            data =    {
+                    "id": question.id,
+                    "title": question.title,
+                    "body": question.body,
+                    "author": {
+                        "id": question.author.id,
+                        "username": question.author.username,
+                    },
+                    "response_count": question.responses.count(),
+                    "created_at": question.created_at,
+                    "updated_at": question.updated_at,
+                    "upvote_count": question.upvotes.count(),
+                    "upvoted_by_user": question.upvotes.filter(
+                        author=user
+                    ).exists(),
+                }
+            
+            return DRFResponse(data, status=status.HTTP_200_OK)
         else:
             questions = (
                 Question.objects.select_related("author")
@@ -47,7 +63,7 @@ class QuestionAPIView(StandardPermissionAPIView):
                 )
                 .order_by("created_at")
             )
-            user = request.user.id
+           
             data = []
             for question in questions:
                 data.append(
@@ -78,7 +94,7 @@ class QuestionAPIView(StandardPermissionAPIView):
 
     def post(self, request):
         data = {**request.data, "author": request.user.id}
-        serializer = Questionserializer(data=data)
+        serializer = Questionserializer(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return DRFResponse(serializer.data, status=status.HTTP_201_CREATED)

@@ -1,23 +1,48 @@
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
+import { useContext } from 'react';
+
 import type { Question } from '../types';
 import '../Css/questioncard.css';
 import { formatDistanceToNow } from 'date-fns';
+import { AuthContext } from '../utills/auth';
+import { QuestionContext } from '../utills/question';
 
 type Props = {
   question: Question;
 };
 export const QuestionCard: React.FC<Props> = ({ question }) => {
-  const navigate = useNavigate();
-
   const maxChars = 300;
   const shortBody =
     question.body.length > maxChars
       ? question.body.slice(0, maxChars) + '...'
       : question.body;
 
+  const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+  if (!authContext) {
+    throw new Error(
+      'useContext(QuestionContext) returned null — did you forget to wrap a provider?'
+    );
+  }
+  const { user } = authContext;
+  const questionContext = useContext(QuestionContext);
+  if (!questionContext) {
+    throw new Error(
+      'useContext(QuestionContext) returned null — did you forget to wrap a provider?'
+    );
+  }
+  const { deleteQuestion_ } = questionContext;
+
   const showDescription = () => {
     navigate(`/question/${question.id}`);
+  };
+
+  const handelUpdate = async () => {
+    navigate(`/update/question/${question.id}`);
+  };
+  const deleteQuestion = async () => {
+    deleteQuestion_(question.id);
   };
 
   return (
@@ -57,6 +82,16 @@ export const QuestionCard: React.FC<Props> = ({ question }) => {
             </span>
           </div>
         </div>
+        {question.author.id === user?.id && (
+          <div className="questionCard_privlages">
+            <button className="delete" onClick={deleteQuestion}>
+              delete
+            </button>
+            <button className="update" onClick={handelUpdate}>
+              update
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

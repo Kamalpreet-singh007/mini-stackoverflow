@@ -1,46 +1,52 @@
 import { QuestionContext } from '../utills/question';
 import { useState, useContext, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import type { Response } from '../types';
+import type { Question, Response } from '../types';
 import '../Css/questiondescriptionpage.css';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, set } from 'date-fns';
 import { ResponseCard } from '../Components/responsecard';
 
 export const QuestionDescriptionPage = () => {
   const { id } = useParams<{ id: string }>();
   const questionid = id;
   const [responses, setResponses] = useState<Response[]>([]);
+  const [body, setBody] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [upvoted, setUpvoted] = useState(false);
+  const [upvoteCount, setUpvoteCount] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState<
+    Question | undefined
+  >();
 
-  const updateResponse = (updated: Response) => {
-    setResponses((prevResponses) =>
-      prevResponses.map((res) => (res.id === updated.id ? updated : res))
-    );
-  };
   const questionContext = useContext(QuestionContext);
   if (!questionContext) {
     throw new Error(
       'useContext(QuestionContext) returned null — did you forget to wrap a provider?'
     );
   }
-  const { getQuestionDescription, questions, postResponse, getquestions } =
+  const { getResponses, postResponse, upvote, downvote, getQuestionbyId } =
     questionContext;
-  const [body, setBody] = useState('');
-  const [loading, setLoading] = useState(false);
-  useEffect(() => {
-    if (!questions) {
-      // This will fetch and set questions in context
-      getquestions();
-    }
-  }, [questions, questionContext]);
+
   useEffect(() => {
     setLoading(true);
-    console.log('in question description page useEffect');
+    const getQuestion = async () => {
+      const questiondata = await getQuestionbyId(Number(questionid));
+      setCurrentQuestion(questiondata);
+      console.log('questiondata', questiondata);
+      setUpvoted(questiondata?.upvoted_by_user || false);
+      setUpvoteCount(questiondata?.upvote_count || 0);
+      console.log('upvoted', questiondata?.upvoted_by_user);
+      console.log('upvoteCount', questiondata?.upvote_count);
+      setLoading(false);
+    };
+    getQuestion();
+  }, [questionid, getQuestionbyId]);
+  useEffect(() => {
+    setLoading(true);
     try {
       const fetchQuestionDescription = async () => {
-        const result = await getQuestionDescription(Number(questionid));
-        console.log('in question description page result', result);
-        setQuestionDescription(result);
-        console.log(questionDescription);
+        const result = await getResponses(Number(questionid));
+        setResponses(result);
       };
       fetchQuestionDescription();
     } catch (err) {
@@ -48,34 +54,59 @@ export const QuestionDescriptionPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [questionid, getQuestionDescription]);
+  }, [questionid, getResponses]);
 
-  const [questionDescription, setQuestionDescription] = useState<Response[]>(
-    []
-  );
-
-  if (!questions) {
-    return <div>Loading questions...</div>;
-  }
-  const currentQuestion = questions?.find((q) => q.id === Number(questionid))!;
-
-  console.log('currentQuestion in question description page', currentQuestion);
-
-  if (loading) {
+  if (loading || !currentQuestion) {
     return <div>Loading question...</div>;
   }
+  const updateResponse = (updated: Response) => {
+    setResponses((prevResponses) =>
+      prevResponses.map((res) => (res.id === updated.id ? updated : res))
+    );
+  };
+
   const handelpost = async (e: React.FormEvent) => {
     e.preventDefault();
     await postResponse(currentQuestion.id, body);
     setBody('');
   };
-  console.log(questionDescription);
+
+  const handleUpvote = async () => {
+    if (!localStorage.getItem('access_token')) {
+      alert('Please login to like this response.');
+      return;
+    }
+    const prevLikeCount = currentQuestion.upvote_count;
+    const prevLiked = currentQuestion.upvoted_by_user;
+    // console.log('prevLiked', prevLiked);
+    const optimisticLiked = !upvoted;
+    const optimisticCount = upvoteCount + (optimisticLiked ? 1 : -1);
+    setUpvoted(optimisticLiked);
+    setUpvoteCount(optimisticCount);
+    try {
+      if (optimisticLiked) {
+        await upvote(currentQuestion.id, 'question');
+      } else {
+        await downvote(currentQuestion.id, 'question');
+      }
+    } catch (error) {
+      console.error('Failed to update like:', error);
+      setUpvoted(prevLiked);
+      setUpvoteCount(prevLikeCount);
+    }
+  };
   return (
     <div className="descriptionPage">
       <div className="descriptionPage-content">
         <div className="descriptionPage-mainline">
           <div className="descriptionPage-question-upvote">
-            <p>upvote</p>
+            <button
+              className={`upvote-btn ${upvoted ? 'upvoted' : ''}`}
+              onClick={handleUpvote}
+            >
+              ▲
+            </button>
+            <div className="upvote-count">{upvoteCount}</div>
           </div>
           <div className="descriptionPage-question">
             <h1 className="descriptionPage-title">{currentQuestion?.title}</h1>
@@ -109,7 +140,7 @@ export const QuestionDescriptionPage = () => {
         </div>
         <div className="descriptionPage-responses">
           <h2>Responses</h2>
-          {questionDescription.map((res) => (
+          {responses.map((res) => (
             <ResponseCard
               key={res.id}
               response={res}
