@@ -8,7 +8,7 @@ interface QuestionContextType {
   getResponses: (id: number) => Promise<Response[]>;
   getComments: (responseId: number) => Promise<CommentDescription[]>;
   getResponseById: (response_Id: number) => Promise<Response>;
-  getQuestionbyId: (id: number) => Promise<Question | undefined>;
+  getQuestionbyId: (id: number) => Promise<Question>;
   postResponse: (id: number, body: string) => void;
   postQuestion: (title: string, body: string) => Promise<void>;
   postComment: (
@@ -17,12 +17,13 @@ interface QuestionContextType {
   ) => Promise<CommentDescription | undefined>;
 
   deleteQuestion_: (question_id: Number) => Promise<void>;
-
+  getSearchedQuestion: (query: string) => Promise<Question[]>;
   updateQuestion: (id: number, body: string) => Promise<void>;
 
   upvote: (entity_id: number, entity_type: string) => void;
   downvote: (entity_id: number, entity_type: string) => void;
-  questions: Question[] | undefined;
+  setquestions: React.Dispatch<React.SetStateAction<Question[]>>;
+  questions: Question[];
 }
 
 export const QuestionContext = createContext<QuestionContextType | null>(null);
@@ -30,7 +31,7 @@ export const QuestionContext = createContext<QuestionContextType | null>(null);
 export const QuestionContextProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [questions, setquestions] = useState<Question[] | undefined>(undefined);
+  const [questions, setquestions] = useState<Question[]>([]);
   const navigate = useNavigate();
 
   const getquestions = async () => {
@@ -58,7 +59,36 @@ export const QuestionContextProvider: React.FC<{ children: ReactNode }> = ({
       alert('unable to fetch.');
     }
   };
+  const getSearchedQuestion = async (query: string) => {
+    const token = localStorage.getItem('access_token');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/questions/search/?search=${query}`,
+        {
+          method: 'Get',
+          headers,
+        }
+      );
+      if (!response.ok) {
+        throw new Error('unable to fetch searched questions');
+      }
+      const data = await response.json();
+      const questions = data || [];
+      setquestions(questions);
 
+      console.log(questions);
+      return questions;
+    } catch (error) {
+      console.error('fetch error:', error);
+      alert('unable to fetch searched questions.');
+    }
+  };
   const getResponses = async (id: number) => {
     try {
       const token = localStorage.getItem('access_token');
@@ -316,7 +346,7 @@ export const QuestionContextProvider: React.FC<{ children: ReactNode }> = ({
       const response = await fetch(
         `http://localhost:8000/api/questions/${id}/`,
         {
-          method: 'PATCH',
+          method: 'PATCH ',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -340,6 +370,7 @@ export const QuestionContextProvider: React.FC<{ children: ReactNode }> = ({
     <QuestionContext.Provider
       value={{
         getquestions,
+        getSearchedQuestion,
         getResponses,
         questions,
         postResponse,
@@ -352,6 +383,7 @@ export const QuestionContextProvider: React.FC<{ children: ReactNode }> = ({
         deleteQuestion_,
         postQuestion,
         updateQuestion,
+        setquestions,
       }}
     >
       {children}
