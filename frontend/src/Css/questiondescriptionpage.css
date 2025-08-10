@@ -11,8 +11,39 @@
   flex-direction: row;
 }
 .descriptionPage-question-upvote {
-  background-color: black;
+  background-color: white;
   flex: 0 15%;
+  border: #ccc 1px solid;
+}
+
+.descriptionPage-question-upvote {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 20px;
+}
+.upvote-btn {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #888;
+  transition: color 0.3s;
+}
+
+.upvote-btn:hover {
+  color: #0074cc;
+}
+
+.upvote-btn.upvoted {
+  color: #f48024;
+  cursor: default;
+}
+
+.upvote-count {
+  margin-top: 4px;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .descriptionPage-question {

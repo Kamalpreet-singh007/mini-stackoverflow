@@ -109,7 +109,7 @@ class QuestionAPIView(StandardPermissionAPIView):
                     {"ERROR": "Question not found"}, status=status.HTTP_404_NOT_FOUND
                 )
             self.check_object_permissions(request, question)
-            serializer = Questionserializer(question, data=request.data, partial=True)
+            serializer = Questionserializer(question, data=request.data,context={'request': request}, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return DRFResponse(serializer.data, status=status.HTTP_200_OK)
