@@ -1,8 +1,5 @@
+const ProfilePage = () => {
+  return <h1 className=" flex">sck</h1>;
+};
 
-const ProfilePage = () =>{
-    return(
-        <p>qProfile page</p>
-    )
-}
-
-export default ProfilePage
+export default ProfilePage;
