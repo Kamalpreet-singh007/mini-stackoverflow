@@ -10,7 +10,6 @@ import QuestionDescriptionPage from './Pages/questiondescrptionPage';
 import { AuthContextProvider } from './utills/auth';
 import { QuestionContextProvider } from './utills/question';
 import RequireAuth from './utills/requireAuth';
-import './App.css';
 import { Route, Routes } from 'react-router-dom';
 function App() {
   return (
@@ -18,7 +17,7 @@ function App() {
       <AuthContextProvider>
         <QuestionContextProvider>
           <NavBar />
-          <main className="main-content">
+          <main className="flex bg-[A888B5] min-h-screen">
             <Routes>
               <Route path="/update/:type/:id" element={<Update />} />
               <Route path="/login" element={<AuthPage />} />
